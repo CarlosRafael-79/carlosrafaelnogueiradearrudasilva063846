@@ -22,10 +22,10 @@ public class OpenApiConfig {
                                         .bearerFormat("JWT")))
                 .info(new Info()
                         .title("Artist Manager API")
-                        .description("API para gerenciamento de artistas, álbuns e discografia. Desenvolvido para teste Sênior.")
+                        .description("API para gerenciamento de artistas e álbuns . Desenvolvido para desafio Back End Java Sênior.")
                         .version("v1")
                         .contact(new Contact()
                                 .name("Carlos Rafael")
-                                .email("carlos@exemplo.com")));
+                                .email("https://github.com/CarlosRafael-79")));
     }
 }
