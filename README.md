@@ -167,7 +167,7 @@ backend/src/main/java/br/com/carlos/artist_manager_api/
 
 ### Schema do Banco de Dados
 
-FOTO BANCO 
+![FOTO BANCO ](image.png)
 
 
 ### Configuração do MinIO
