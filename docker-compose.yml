@@ -1,0 +1,101 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: artist-manager-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - artist-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: artist-manager-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000" 
+      - "9001:9001" 
+    volumes:
+      - minio_data:/data
+    networks:
+      - artist-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3  
+
+  minio-setup:
+    image: minio/mc
+    container_name: artist-manager-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy 
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+    volumes:
+      - ./seeds/images:/images      
+      - ./seeds/scripts:/scripts    
+    networks:
+      - artist-network         
+    entrypoint: ["/bin/sh", "/scripts/init-minio.sh"]
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb --ignore-existing myminio/${MINIO_BUCKET_NAME};
+      /usr/bin/mc anonymous set public myminio/${MINIO_BUCKET_NAME};
+      exit 0;
+      "
+    networks:
+      - artist-network
+
+  api:
+    build: ./backend
+    container_name: artist-manager-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      AWS_S3_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+    ports:
+      - "${API_PORT}:8080"
+    networks:
+      - artist-network
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  artist-network:
+    driver: bridge
