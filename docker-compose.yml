@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: artist-manager-db
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: artist_manager_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5433:5432"
     volumes:
@@ -13,7 +13,7 @@ services:
     networks:
       - artist-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d artist_manager_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,8 +23,8 @@ services:
     container_name: artist-manager-minio
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - "9000:9000" 
       - "9001:9001" 
@@ -44,6 +44,10 @@ services:
     depends_on:
       minio:
         condition: service_healthy 
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
     volumes:
       - ./seeds/images:/images      
       - ./seeds/scripts:/scripts    
@@ -58,9 +62,9 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
-      /usr/bin/mc mb myminio/capas-albuns;
-      /usr/bin/mc anonymous set public myminio/capas-albuns;
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb --ignore-existing myminio/${MINIO_BUCKET_NAME};
+      /usr/bin/mc anonymous set public myminio/${MINIO_BUCKET_NAME};
       exit 0;
       "
     networks:
@@ -75,16 +79,16 @@ services:
       minio:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/artist_manager_db
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       AWS_S3_ENDPOINT: http://minio:9000
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: minioadmin
-      AWS_REGION: us-east-1
-      AWS_S3_BUCKET_NAME: capas-albuns
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET_NAME: ${MINIO_BUCKET_NAME}
     ports:
-      - "8080:8080"
+      - "${API_PORT}:8080"
     networks:
       - artist-network
 

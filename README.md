@@ -167,7 +167,7 @@ backend/src/main/java/br/com/carlos/artist_manager_api/
 
 ### Schema do Banco de Dados
 
-FOTO BANCO 
+![FOTO BANCO ](image.png)
 
 
 ### Configuração do MinIO
@@ -292,7 +292,7 @@ Este comando irá:
 3. Subir MinIO nas portas 9000/9001
 4. Executar script de setup do MinIO (cria bucket e faz upload de imagens)
 5. Executar migrations do Flyway
-6. Iniciar a API na porta 8080
+6. Iniciar a API na porta 8080gi
 
 ### Acessos
 
@@ -303,8 +303,8 @@ Este comando irá:
 
 ### Usuários Padrão
 
-- **Admin**: `admin@example.com` / `admin123`
-- **User**: `user@example.com` / `user123`
+- **Admin**: `admin@example.com` / `123456`
+- **User**: `user@example.com` / `123456`
 
 ### Testes
 
