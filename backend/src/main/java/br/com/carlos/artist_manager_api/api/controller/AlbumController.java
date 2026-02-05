@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +34,9 @@ import java.util.UUID;
 public class AlbumController {
 
     private final AlbumService service;
+
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
     @Operation(summary = "Listar álbuns (com filtros)", description = "Busca álbuns filtrando por título parcial ou nome do artista vinculado.")
@@ -52,6 +56,9 @@ public class AlbumController {
     })
     public ResponseEntity<AlbumResponse> criar(@RequestBody @Valid AlbumInput input) {
         AlbumResponse response = service.salvar(input);
+
+        messagingTemplate.convertAndSend("/topic/albuns", response);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
