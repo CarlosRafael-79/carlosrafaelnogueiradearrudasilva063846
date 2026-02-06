@@ -306,8 +306,8 @@ Este comando irá:
 
 ### Usuários Padrão
 
-- **Admin**: `admin@example.com` / `123456`
-- **User**: `user@example.com` / `123456`
+- **Admin**: `admin@artistmanager.com` / `123456`
+- **User**: `user@artistmanager.com` / `123456`
 
 ### Testes
 
@@ -317,4 +317,155 @@ cd backend
 ./mvnw test
 ```
 
----
+### Exemplos de Uso da API
+
+Abaixo estão exemplos práticos de como interagir com os principais endpoints.
+
+#### 1. Realizar Login (Autenticação)
+
+Obtém o token JWT necessário para as operações protegidas.
+
+**Requisição:**
+
+**POST**: http://localhost:8080/v1/auth/login
+```json
+{
+    "username": "admin@artistmanager.com",
+    "password": "password"
+}
+
+```
+
+**Resposta:**
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJh...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJh..."
+}
+
+```
+
+O "acessToken" é o token de acesso e deve ser configurado antes de seguir as próximas requisições.
+
+#### 2. Gerenciamento de Gêneros
+
+Operações de listagem e cadastro de gêneros musicais.
+
+**Inserir Gênero:**
+
+**POST:** http://localhost:8080/v1/generos 
+
+**Resposta:**
+
+```json
+{
+    "nome": "Rock Psicodélico",
+    "slug": "rock-psicodelico"
+}
+```
+
+**Listar Gêneros:**
+
+**GET:** http://localhost:8080/v1/generos
+
+
+#### 3. Pesquisa com Filtro (Álbuns)
+
+Exemplo de busca paginada filtrando por nome do artista e título do álbum.
+
+**Requisição:**
+
+**GET:** http://localhost:8080/v1/albuns?nomeArtista=Mike&titulo=Post&page=0&size=10
+
+**Resposta:**
+
+```json
+{
+    "content": [
+        {
+            "id": "467e478d-931c-4dd4-b816-f79852d8f189",
+            "titulo": "Post Traumatic",
+            "anoLancamento": 2018,
+            "duracaoSegundos": null,
+            "artistas": [
+                {
+                    "id": "9697311c-2dad-4a0c-9160-e7781dd45338",
+                    "nome": "Mike Shinoda",
+                    "paisOrigem": "USA",
+                    "anoFormacao": 1996,
+                    "descricao": null
+                }
+            ],
+            "generos": [
+                {
+                    "id": "2b7fe8cd-32f6-4d36-9fe4-b2e84c6418a5",
+                    "nome": "Hip Hop",
+                    "slug": "hip-hop"
+                }
+            ],
+            "imagens": [
+                {
+                    "id": "59365658-80de-49fa-b74e-05c1c67f19a2",
+                    "nomeArquivo": "Capa Frontal",
+                    "urlAssinada": null
+                }
+            ]
+        },
+        {
+            "id": "1b5d3b9e-b674-49ec-a7ab-25b01c41a467",
+            "titulo": "Post Traumatic EP",
+            "anoLancamento": 2018,
+            "duracaoSegundos": null,
+            "artistas": [
+                {
+                    "id": "9697311c-2dad-4a0c-9160-e7781dd45338",
+                    "nome": "Mike Shinoda",
+                    "paisOrigem": "USA",
+                    "anoFormacao": 1996,
+                    "descricao": null
+                }
+            ],
+            "generos": [
+                {
+                    "id": "2b7fe8cd-32f6-4d36-9fe4-b2e84c6418a5",
+                    "nome": "Hip Hop",
+                    "slug": "hip-hop"
+                }
+            ],
+            "imagens": [
+                {
+                    "id": "fcb86eae-e49a-492e-93db-7e5d8a677e77",
+                    "nomeArquivo": "Capa Frontal",
+                    "urlAssinada": null
+                }
+            ]
+        }
+    ],
+    "empty": false,
+    "first": true,
+    "last": true,
+    "number": 0,
+    "numberOfElements": 2,
+    "pageable": {
+        "offset": 0,
+        "pageNumber": 0,
+        "pageSize": 10,
+        "paged": true,
+        "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+        },
+        "unpaged": false
+    },
+    "size": 10,
+    "sort": {
+        "empty": false,
+        "sorted": true,
+        "unsorted": false
+    },
+    "totalElements": 2,
+    "totalPages": 1
+}
+```
